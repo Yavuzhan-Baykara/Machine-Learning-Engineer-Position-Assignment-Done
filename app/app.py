@@ -3,6 +3,8 @@ import pandas as pd
 import os
 import sys
 import io
+import torch
+import numpy as np
 
 # Üst dizini sys.path'e ekleyelim
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -15,6 +17,7 @@ from src.yahoofinance import get_last_30_days_data
 from src.forecast.prediction import predict_next_days
 from src.forecast.model_utils import load_model_and_scaler
 from src.visualization import display_forecast_table, display_forecast_plot
+from src.forecast.model_utils import normalize_sequence
 
 # Streamlit genişlik ayarı
 st.markdown(
@@ -105,16 +108,23 @@ with tabs[1]:
             model, scaler = load_model_and_scaler(model_path, scaler_path, file_source="local")
 
         if st.sidebar.button(f"Run {forecast_days}-Day Forecast"):
-            # SMA verilerini alalım
+            # SMA verilerini al
             data = get_last_30_days_data(selected_ticker)
             data = process_stock_data(data)
-            latest_data = data.iloc[-1]  # En son satırdaki SMA verilerini al
-            open_val, high_val, low_val = latest_data['Open'], latest_data['High'], latest_data['Low']
-            sma_val = latest_data['SMA (17 Days)']  # Model için en iyi SMA değeri
+
+            # En son satırdaki SMA verilerini al
+            latest_data = data.iloc[-1]
+
+            # **Doğru formatta float değerler al**
+            open_val = float(latest_data['Open'])
+            high_val = float(latest_data['High'])
+            low_val = float(latest_data['Low'])
+            sma_val = float(latest_data['SMA (17 Days)'])  # Model için en iyi SMA değeri
 
             # Model ile tahmin yap
             dates, y_pred_denorm = predict_next_days(open_val, high_val, low_val, sma_val, model, scaler, forecast_days)
 
+            # **Sonuçları Görselleştir**
             st.header(f"📈 {forecast_days}-Day Stock Price Prediction for {selected_ticker}")
             df_forecast = display_forecast_table(dates, y_pred_denorm)
             display_forecast_plot(dates, y_pred_denorm, selected_ticker, forecast_days)
