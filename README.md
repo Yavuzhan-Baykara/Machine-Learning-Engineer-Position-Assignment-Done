@@ -1,9 +1,5 @@
 ﻿# 📌 Stock Market Prediction & Trading
 
-## 📖 Overview
-This repository contains the implementation of a machine learning assignment for the **Machine Learning Engineer Position**. The project involves forecasting stock prices using deep learning techniques, specifically a PyTorch-based model.
-
-
 ## 🚀 Installation & Setup
 
 ### **1️⃣ Clone the Repository**
